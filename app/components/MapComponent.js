@@ -9,7 +9,12 @@ const MapComponent = ({ filters, onFiltersChange }) => {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && !mapInstanceRef.current) {
+    if (typeof window !== 'undefined' && mapRef.current && !mapInstanceRef.current) {
+      // 기존 지도 인스턴스가 있으면 제거
+      if (mapRef.current._leaflet_id) {
+        mapRef.current._leaflet_id = null;
+      }
+
       import('leaflet').then((L) => {
         // Leaflet CSS 동적 로딩
         if (!document.querySelector('link[href*="leaflet.css"]')) {
@@ -27,46 +32,57 @@ const MapComponent = ({ filters, onFiltersChange }) => {
           shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png',
         });
 
-        // 지도 생성
-        const map = L.map(mapRef.current, {
-          center: [37.5665, 126.9780], // 서울시청
-          zoom: 11,
-          zoomControl: true
-        });
+        try {
+          // 지도 생성
+          const map = L.map(mapRef.current, {
+            center: [37.5665, 126.9780], // 서울시청
+            zoom: 11,
+            zoomControl: true
+          });
 
-        // OpenStreetMap 타일 추가
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+          // OpenStreetMap 타일 추가
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(map);
 
-        mapInstanceRef.current = map;
-        setIsMapLoaded(true);
+          mapInstanceRef.current = map;
+          setIsMapLoaded(true);
 
-        // 기존 반경 필터가 있으면 표시
-        if (filters.radius && filters.radius.lat && filters.radius.lng && filters.radius.meters > 0) {
-          showRadius(L, map, filters.radius.lat, filters.radius.lng, filters.radius.meters);
+          // 기존 반경 필터가 있으면 표시
+          if (filters.radius && filters.radius.lat && filters.radius.lng && filters.radius.meters > 0) {
+            showRadius(L, map, filters.radius.lat, filters.radius.lng, filters.radius.meters);
+          }
+
+          // 클릭 이벤트 추가
+          map.on('click', (e) => {
+            const { lat, lng } = e.latlng;
+            const meters = filters.radius?.meters || 1000;
+            
+            showRadius(L, map, lat, lng, meters);
+            
+            const newFilters = {
+              ...filters,
+              radius: { lat, lng, meters }
+            };
+            onFiltersChange(newFilters);
+          });
+        } catch (error) {
+          console.error('Map initialization error:', error);
         }
-
-        // 클릭 이벤트 추가
-        map.on('click', (e) => {
-          const { lat, lng } = e.latlng;
-          const meters = filters.radius?.meters || 1000;
-          
-          showRadius(L, map, lat, lng, meters);
-          
-          const newFilters = {
-            ...filters,
-            radius: { lat, lng, meters }
-          };
-          onFiltersChange(newFilters);
-        });
+      }).catch((error) => {
+        console.error('Leaflet import error:', error);
       });
     }
 
     return () => {
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
+        try {
+          mapInstanceRef.current.remove();
+        } catch (error) {
+          console.error('Map cleanup error:', error);
+        } finally {
+          mapInstanceRef.current = null;
+        }
       }
     };
   }, []);

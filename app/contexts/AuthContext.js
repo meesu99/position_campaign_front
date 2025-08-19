@@ -23,9 +23,15 @@ export function AuthProvider({ children }) {
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
+      } else if (response.status === 401) {
+        // 인증되지 않은 상태는 정상적인 상황
+        setUser(null);
+      } else {
+        console.error('Auth check failed with status:', response.status);
       }
     } catch (error) {
       console.error('Auth check failed:', error);
+      setUser(null);
     } finally {
       setLoading(false);
     }
