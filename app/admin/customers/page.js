@@ -9,6 +9,7 @@ export default function AdminCustomers() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
+  const [showAddressSearch, setShowAddressSearch] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     gender: '',
@@ -197,6 +198,50 @@ export default function AdminCustomers() {
       address += sigungu;
     }
     return address;
+  };
+
+  // 주소 검색 팝업 열기
+  const openAddressSearch = () => {
+    if (typeof window !== 'undefined' && window.daum && window.daum.Postcode) {
+      new window.daum.Postcode({
+        oncomplete: function(data) {
+          // 주소 정보를 폼에 설정
+          setFormData({
+            ...formData,
+            roadAddress: data.roadAddress,
+            postalCode: data.zonecode,
+            sido: data.sido,
+            sigungu: data.sigungu
+          });
+          
+          // 지오코딩을 통해 위도/경도 획득
+          geocodeAddress(data.roadAddress);
+        }
+      }).open();
+    }
+  };
+
+  // 주소를 위도/경도로 변환 (지오코딩)
+  const geocodeAddress = (address) => {
+    if (typeof window !== 'undefined' && window.kakao && window.kakao.maps && window.kakao.maps.services) {
+      const geocoder = new window.kakao.maps.services.Geocoder();
+      
+      geocoder.addressSearch(address, function(result, status) {
+        if (status === window.kakao.maps.services.Status.OK) {
+          const lat = parseFloat(result[0].y);
+          const lng = parseFloat(result[0].x);
+          
+          setFormData(prev => ({
+            ...prev,
+            lat: lat.toString(),
+            lng: lng.toString()
+          }));
+        } else {
+          console.error('지오코딩 실패:', status);
+          alert('위도/경도 변환에 실패했습니다. 수동으로 입력해주세요.');
+        }
+      });
+    }
   };
 
   return (
@@ -447,63 +492,81 @@ export default function AdminCustomers() {
                   className="input-field"
                 />
                 
-                <input
-                  type="text"
-                  placeholder="도로명주소"
-                  value={formData.roadAddress}
-                  onChange={(e) => setFormData({ ...formData, roadAddress: e.target.value })}
-                  className="input-field"
-                />
-                
-                <input
-                  type="text"
-                  placeholder="상세주소"
-                  value={formData.detailAddress}
-                  onChange={(e) => setFormData({ ...formData, detailAddress: e.target.value })}
-                  className="input-field"
-                />
-                
-                <input
-                  type="text"
-                  placeholder="우편번호"
-                  value={formData.postalCode}
-                  onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                  className="input-field"
-                />
-                
-                <input
-                  type="text"
-                  placeholder="시도"
-                  value={formData.sido}
-                  onChange={(e) => setFormData({ ...formData, sido: e.target.value })}
-                  className="input-field"
-                />
-                
-                <input
-                  type="text"
-                  placeholder="시군구"
-                  value={formData.sigungu}
-                  onChange={(e) => setFormData({ ...formData, sigungu: e.target.value })}
-                  className="input-field"
-                />
-                
-                <div className="grid grid-cols-2 gap-2">
+                {/* 주소 검색 */}
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="도로명주소"
+                      value={formData.roadAddress}
+                      onChange={(e) => setFormData({ ...formData, roadAddress: e.target.value })}
+                      className="input-field flex-1"
+                      readOnly
+                    />
+                    <button
+                      type="button"
+                      onClick={openAddressSearch}
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 whitespace-nowrap"
+                    >
+                      주소 검색
+                    </button>
+                  </div>
+                  
                   <input
-                    type="number"
-                    placeholder="위도"
-                    value={formData.lat}
-                    onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
+                    type="text"
+                    placeholder="상세주소"
+                    value={formData.detailAddress}
+                    onChange={(e) => setFormData({ ...formData, detailAddress: e.target.value })}
                     className="input-field"
-                    step="any"
                   />
-                  <input
-                    type="number"
-                    placeholder="경도"
-                    value={formData.lng}
-                    onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
-                    className="input-field"
-                    step="any"
-                  />
+                  
+                  <div className="grid grid-cols-3 gap-2">
+                    <input
+                      type="text"
+                      placeholder="우편번호"
+                      value={formData.postalCode}
+                      onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                      className="input-field"
+                      readOnly
+                    />
+                    <input
+                      type="text"
+                      placeholder="시도"
+                      value={formData.sido}
+                      onChange={(e) => setFormData({ ...formData, sido: e.target.value })}
+                      className="input-field"
+                      readOnly
+                    />
+                    <input
+                      type="text"
+                      placeholder="시군구"
+                      value={formData.sigungu}
+                      onChange={(e) => setFormData({ ...formData, sigungu: e.target.value })}
+                      className="input-field"
+                      readOnly
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="number"
+                      placeholder="위도 (자동입력)"
+                      value={formData.lat}
+                      onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
+                      className="input-field bg-gray-50"
+                      step="any"
+                      readOnly
+                    />
+                    <input
+                      type="number"
+                      placeholder="경도 (자동입력)"
+                      value={formData.lng}
+                      onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
+                      className="input-field bg-gray-50"
+                      step="any"
+                      readOnly
+                    />
+                  </div>
                 </div>
                 
                 <div className="flex space-x-3">
