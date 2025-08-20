@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import ProtectedRoute from '../components/ProtectedRoute';
+import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 
 export default function Wallet() {
+  const { updateUserPoints } = useAuth();
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [chargeAmount, setChargeAmount] = useState(10000);
@@ -67,8 +69,14 @@ export default function Wallet() {
       });
 
       if (response.ok) {
+        const result = await response.json();
         alert('충전이 완료되었습니다!');
+        // 잔액 즉시 업데이트
+        setBalance(result.transaction.balanceAfter);
+        // 전체 데이터 다시 가져오기
         await fetchWalletData();
+        // Navbar의 포인트 표시 업데이트
+        await updateUserPoints();
         setChargeAmount(10000);
       } else {
         const error = await response.json();

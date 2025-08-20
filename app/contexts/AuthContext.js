@@ -92,13 +92,29 @@ export function AuthProvider({ children }) {
     router.push('/login');
   };
 
+  const updateUserPoints = async () => {
+    try {
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Failed to update user points:', error);
+    }
+  };
+
   const value = {
     user,
     loading,
     login,
     signup,
     logout,
-    checkAuthStatus
+    checkAuthStatus,
+    updateUserPoints
   };
 
   return (

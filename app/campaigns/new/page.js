@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import Navbar from '../../components/Navbar';
 import MapComponent from '../../components/MapComponent';
+import { useAuth } from '../../contexts/AuthContext';
 
 // 가격 계산 함수 - 새로운 구조에 맞게 수정
 function activeFilterCount(filters) {
@@ -23,6 +24,7 @@ function unitPriceByFilters(n) {
 
 export default function NewCampaign() {
   const router = useRouter();
+  const { updateUserPoints } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     messageText: '',
@@ -271,6 +273,8 @@ export default function NewCampaign() {
 
         if (sendResponse.ok) {
           alert('캠페인이 발송되었습니다!');
+          // Navbar의 포인트 표시 업데이트
+          await updateUserPoints();
           router.push('/dashboard');
         } else {
           const error = await sendResponse.json();

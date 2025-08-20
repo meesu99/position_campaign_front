@@ -15,6 +15,7 @@ export default function Dashboard() {
     clickRate: 0
   });
   const [chartData, setChartData] = useState([]);
+  const [ageData, setAgeData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -55,6 +56,11 @@ export default function Dashboard() {
         if (dashboardData.recentCampaigns) {
           setCampaigns(dashboardData.recentCampaigns);
         }
+        
+        // 나이대별 분포 설정
+        if (dashboardData.ageDistribution) {
+          setAgeData(dashboardData.ageDistribution);
+        }
       } else {
         console.error('Failed to fetch dashboard stats:', await statsRes.text());
       }
@@ -70,12 +76,7 @@ export default function Dashboard() {
     { name: '여성', value: 55 },
   ];
 
-  const ageData = [
-    { name: '20대', value: 25 },
-    { name: '30대', value: 35 },
-    { name: '40대', value: 25 },
-    { name: '50대+', value: 15 },
-  ];
+  // ageData는 이제 state로 관리됨
 
   if (loading) {
     return (
