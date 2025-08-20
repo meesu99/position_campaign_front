@@ -182,9 +182,21 @@ export default function AdminCustomers() {
     return phone.replace(/(\d{3})-(\d{4})-(\d{4})/, '$1-****-$3');
   };
 
-  const maskAddress = (address) => {
-    if (!address) return '';
-    return address.length > 20 ? address.substring(0, 20) + '...' : address;
+  const maskName = (name) => {
+    if (!name) return '';
+    if (name.length === 1) return name;
+    return name.charAt(0) + '*'.repeat(name.length - 1);
+  };
+
+  const maskAddress = (sido, sigungu) => {
+    if (!sido && !sigungu) return '';
+    let address = '';
+    if (sido) address += sido;
+    if (sigungu) {
+      if (address) address += ' ';
+      address += sigungu;
+    }
+    return address;
   };
 
   return (
@@ -300,7 +312,7 @@ export default function AdminCustomers() {
                     customers.map((customer) => (
                       <tr key={customer.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {customer.name}
+                          {maskName(customer.name)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {customer.gender === 'M' ? '남성' : customer.gender === 'F' ? '여성' : '-'}
@@ -312,7 +324,7 @@ export default function AdminCustomers() {
                           {maskPhone(customer.phone)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {maskAddress(customer.roadAddress)}
+                          {maskAddress(customer.sido, customer.sigungu)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {customer.sido} {customer.sigungu}
