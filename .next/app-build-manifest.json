@@ -16,6 +16,11 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/page.js"
     ],
+    "/alerts/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/alerts/page.js"
+    ],
     "/wallet/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",

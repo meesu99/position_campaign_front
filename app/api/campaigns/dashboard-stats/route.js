@@ -18,11 +18,27 @@ export async function GET(request) {
     const responseText = await response.text();
     console.log('Backend response text:', responseText);
 
+    if (!response.ok) {
+      console.error('Backend error response:', response.status, responseText);
+      return NextResponse.json(
+        { error: `백엔드 서버 오류: ${response.status}` }, 
+        { status: response.status }
+      );
+    }
+
     let data;
     try {
+      if (responseText.trim() === '') {
+        console.error('Empty response from backend');
+        return NextResponse.json(
+          { error: '백엔드에서 빈 응답을 받았습니다.' }, 
+          { status: 500 }
+        );
+      }
       data = JSON.parse(responseText);
     } catch (parseError) {
       console.error('Failed to parse backend response:', parseError);
+      console.error('Response text was:', responseText);
       return NextResponse.json(
         { error: '서버 응답을 파싱할 수 없습니다.' }, 
         { status: 500 }
