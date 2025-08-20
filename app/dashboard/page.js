@@ -23,56 +23,40 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     try {
-      // 캠페인 목록 조회
-      const campaignsRes = await fetch('/api/campaigns', {
+      // 통합 대시보드 통계 API 호출
+      const statsRes = await fetch('/api/campaigns/dashboard-stats', {
         credentials: 'include'
       });
       
-      if (campaignsRes.ok) {
-        const campaignsData = await campaignsRes.json();
-        setCampaigns(campaignsData.campaigns);
+      if (statsRes.ok) {
+        const dashboardData = await statsRes.json();
         
-        // 통계 계산
-        let totalSent = 0, totalRead = 0, totalClick = 0;
-        
-        for (const campaign of campaignsData.campaigns) {
-          if (campaign.status === 'COMPLETED') {
-            const statsRes = await fetch(`/api/campaigns/${campaign.id}/stats`, {
-              credentials: 'include'
-            });
-            
-            if (statsRes.ok) {
-              const statsData = await statsRes.json();
-              totalSent += statsData.sent;
-              totalRead += statsData.read;
-              totalClick += statsData.click;
-            }
-          }
-        }
-        
+        // 통계 설정
         setStats({
-          totalSent,
-          totalRead,
-          totalClick,
-          readRate: totalSent > 0 ? (totalRead / totalSent * 100).toFixed(1) : 0,
-          clickRate: totalSent > 0 ? (totalClick / totalSent * 100).toFixed(1) : 0
+          totalSent: dashboardData.totalSent,
+          totalRead: dashboardData.totalRead,
+          totalClick: dashboardData.totalClick,
+          readRate: dashboardData.readRate ? dashboardData.readRate.toFixed(1) : 0,
+          clickRate: dashboardData.clickRate ? dashboardData.clickRate.toFixed(1) : 0
         });
         
-        // 차트 데이터 생성 (최근 7일)
-        const chartData = [];
-        for (let i = 6; i >= 0; i--) {
-          const date = new Date();
-          date.setDate(date.getDate() - i);
-          const dateStr = date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
-          
-          chartData.push({
-            date: dateStr,
-            sent: Math.floor(Math.random() * 100) + 50,
-            read: Math.floor(Math.random() * 80) + 30,
-            click: Math.floor(Math.random() * 40) + 10
-          });
+        // 차트 데이터 설정
+        if (dashboardData.chartData) {
+          const chartData = dashboardData.chartData.labels.map((label, index) => ({
+            date: new Date(label).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
+            sent: dashboardData.chartData.sent[index] || 0,
+            read: dashboardData.chartData.read[index] || 0,
+            click: dashboardData.chartData.click[index] || 0
+          }));
+          setChartData(chartData);
         }
-        setChartData(chartData);
+        
+        // 최근 캠페인 설정
+        if (dashboardData.recentCampaigns) {
+          setCampaigns(dashboardData.recentCampaigns);
+        }
+      } else {
+        console.error('Failed to fetch dashboard stats:', await statsRes.text());
       }
     } catch (error) {
       console.error('Error fetching data:', error);
