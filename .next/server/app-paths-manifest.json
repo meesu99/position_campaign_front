@@ -1,9 +1,5 @@
 {
-  "/login/page": "app/login/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/alerts/page": "app/alerts/page.js",
-  "/wallet/page": "app/wallet/page.js",
-  "/admin/customers/page": "app/admin/customers/page.js",
-  "/api/admin/customers/route": "app/api/admin/customers/route.js",
-  "/campaigns/new/page": "app/campaigns/new/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/campaigns/new/page": "app/campaigns/new/page.js",
+  "/api/admin/customers/route": "app/api/admin/customers/route.js"
 }
