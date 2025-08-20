@@ -84,7 +84,7 @@ export default function NewCampaign() {
   const fetchRegions = async () => {
     try {
       console.log('Fetching regions data...');
-      const response = await fetch('/api/admin/customers?page=0&size=10000', {
+      const response = await fetch('/api/campaigns/customers?page=0&size=10000', {
         credentials: 'include'
       });
       

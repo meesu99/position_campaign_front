@@ -9,12 +9,13 @@ const MapComponent = ({ filters, onFiltersChange, onCustomerCountChange }) => {
   const heatmapLayerRef = useRef(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [customers, setCustomers] = useState([]);
+  const mapId = useRef(`map-${Math.random().toString(36).substr(2, 9)}`);
 
   // 고객 데이터 가져오기
   const fetchCustomers = async () => {
     try {
       console.log('Fetching customers for map...');
-      const response = await fetch('/api/admin/customers?page=0&size=1000', {
+      const response = await fetch('/api/campaigns/customers?page=0&size=1000', {
         credentials: 'include'
       });
       
@@ -46,9 +47,14 @@ const MapComponent = ({ filters, onFiltersChange, onCustomerCountChange }) => {
         mapRef.current._leaflet_id = null;
       }
       
-      // DOM 요소 내부 정리
+      // DOM 요소 완전 정리
       if (mapRef.current) {
         mapRef.current.innerHTML = '';
+        // Leaflet 관련 클래스와 속성 제거
+        mapRef.current.className = mapRef.current.className.replace(/leaflet-[^\s]*/g, '');
+        if (mapRef.current._leaflet) {
+          delete mapRef.current._leaflet;
+        }
       }
 
       import('leaflet').then((L) => {
@@ -346,6 +352,7 @@ const MapComponent = ({ filters, onFiltersChange, onCustomerCountChange }) => {
       
       <div 
         ref={mapRef} 
+        id={mapId.current}
         className="w-full h-96 rounded-lg border border-gray-300"
         style={{ minHeight: '400px' }}
       />
