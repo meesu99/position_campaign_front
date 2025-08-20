@@ -7,6 +7,7 @@ const MapComponent = ({ filters, onFiltersChange, onCustomerCountChange }) => {
   const mapInstanceRef = useRef(null);
   const circleRef = useRef(null);
   const heatmapLayerRef = useRef(null);
+  const markersLayerRef = useRef(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [customers, setCustomers] = useState([]);
   const mapId = useRef(`map-${Math.random().toString(36).substr(2, 9)}`);
@@ -219,16 +220,38 @@ const MapComponent = ({ filters, onFiltersChange, onCustomerCountChange }) => {
       // 기존 히트맵 레이어 제거
       if (heatmapLayerRef.current) {
         map.removeLayer(heatmapLayerRef.current);
+        heatmapLayerRef.current = null;
       }
+
+      // 기존 마커 레이어 제거
+      if (markersLayerRef.current) {
+        map.removeLayer(markersLayerRef.current);
+        markersLayerRef.current = null;
+      }
+
+      // 모든 레이어 완전 제거 (기존 마커들도 포함)
+      map.eachLayer((layer) => {
+        if (layer.options && (layer.options.isCustomerMarker || layer.options.isHeatmapLayer)) {
+          map.removeLayer(layer);
+        }
+      });
 
       const filteredCustomers = getFilteredCustomers();
       
-      if (filteredCustomers.length === 0) return;
+      console.log('Updating heatmap with filtered customers:', filteredCustomers.length);
+      console.log('Total customers available:', customers.length);
+      
+      if (filteredCustomers.length === 0) {
+        console.log('No filtered customers to display on map');
+        return;
+      }
 
-      // 히트맵 데이터 준비
+      // 히트맵 데이터 준비 (필터링된 고객만)
       const heatmapData = filteredCustomers
         .filter(customer => customer.lat && customer.lng)
         .map(customer => [customer.lat, customer.lng, 1]);
+
+      console.log('Heatmap data points:', heatmapData.length);
 
       if (heatmapData.length === 0) return;
 
@@ -257,9 +280,14 @@ const MapComponent = ({ filters, onFiltersChange, onCustomerCountChange }) => {
           0.8: 'red',
           1.0: 'magenta'
         }
-      }).addTo(map);
+      });
+
+      // 레이어에 식별자 추가
+      heatmapLayer.options.isHeatmapLayer = true;
+      heatmapLayer.addTo(map);
 
       heatmapLayerRef.current = heatmapLayer;
+      console.log('Heatmap layer created and added to map with', heatmapData.length, 'filtered data points');
 
     } catch (error) {
       console.error('Heatmap update error:', error);
@@ -268,20 +296,40 @@ const MapComponent = ({ filters, onFiltersChange, onCustomerCountChange }) => {
     }
   };
 
-  // 히트맵 실패시 마커로 고객 위치 표시
+  // 히트맵 실패시 마커로 고객 위치 표시 (필터링된 고객만)
   const showCustomerMarkers = (L, map) => {
     const filteredCustomers = getFilteredCustomers();
     
+    console.log('Showing customer markers for filtered customers:', filteredCustomers.length);
+    
+    // 마커 레이어 그룹 생성
+    const markersGroup = L.layerGroup();
+    markersGroup.options.isCustomerMarker = true;
+    
     filteredCustomers.forEach(customer => {
       if (customer.lat && customer.lng) {
-        L.circleMarker([customer.lat, customer.lng], {
-          radius: 3,
+        const marker = L.circleMarker([customer.lat, customer.lng], {
+          radius: 4,
           color: '#e91e63',
           fillColor: '#e91e63',
-          fillOpacity: 0.6
-        }).addTo(map);
+          fillOpacity: 0.7,
+          weight: 2,
+          isCustomerMarker: true
+        }).bindPopup(`
+          <div class="text-sm">
+            <p><strong>위치:</strong> ${customer.sido} ${customer.sigungu}</p>
+            <p><strong>성별:</strong> ${customer.gender === 'M' ? '남성' : customer.gender === 'F' ? '여성' : '미지정'}</p>
+            <p><strong>출생년도:</strong> ${customer.birthYear || '미지정'}</p>
+          </div>
+        `);
+        
+        markersGroup.addLayer(marker);
       }
     });
+    
+    markersGroup.addTo(map);
+    markersLayerRef.current = markersGroup;
+    console.log('Customer markers group created with', filteredCustomers.length, 'filtered customers');
   };
 
   const showRadius = (L, map, lat, lng, meters) => {
@@ -327,7 +375,7 @@ const MapComponent = ({ filters, onFiltersChange, onCustomerCountChange }) => {
     <div className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          반경 선택 {filters.radius?.enabled ? '(지도를 클릭하여 중심점 설정)' : '(반경 필터를 먼저 활성화하세요)'}
+          반경 선택 {filters.radius?.enabled ? '(타겟 범위를 설정하세요)' : '(반경 필터를 먼저 활성화하세요)'}
         </label>
         <div className="flex items-center space-x-4 mb-4">
           <select
@@ -358,12 +406,6 @@ const MapComponent = ({ filters, onFiltersChange, onCustomerCountChange }) => {
       />
       
       <div className="space-y-2">
-        <p className="text-sm text-gray-500">
-          {filters.radius?.enabled 
-            ? '지도를 클릭하여 반경 필터의 중심점을 설정하세요. 선택된 반경 내의 고객들이 캠페인 대상이 됩니다.'
-            : '반경 필터를 활성화하면 지도에서 위치 기반 타겟팅을 할 수 있습니다.'
-          }
-        </p>
         
         {customers.length > 0 && (
           <div className="bg-blue-50 p-3 rounded border">
@@ -374,7 +416,8 @@ const MapComponent = ({ filters, onFiltersChange, onCustomerCountChange }) => {
               </span>
             </div>
             <div className="text-xs text-blue-700 mt-1">
-              전체 고객: {customers.length.toLocaleString()}명
+              전체 고객: {customers.length.toLocaleString()}명 | 
+              🗺️ 지도에는 필터링된 고객만 표시됩니다
             </div>
           </div>
         )}
