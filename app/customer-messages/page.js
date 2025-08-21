@@ -43,7 +43,11 @@ export default function CustomerMessages() {
 
     try {
       const response = await fetch(`/api/customer/${customerIdToFetch}/messages`, {
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
 
       if (response.ok) {
@@ -96,7 +100,8 @@ export default function CustomerMessages() {
       });
       
       if (response.ok) {
-        // 서버에서 최신 데이터 다시 가져오기
+        // 트랜잭션 완료를 위해 짧은 지연 후 최신 데이터 다시 가져오기
+        await new Promise(resolve => setTimeout(resolve, 100));
         await fetchMessages(customerId);
       } else {
         console.error('Failed to mark message as read:', response.status);
@@ -120,7 +125,8 @@ export default function CustomerMessages() {
       });
       
       if (response.ok) {
-        // 서버에서 최신 데이터 다시 가져오기
+        // 트랜잭션 완료를 위해 짧은 지연 후 최신 데이터 다시 가져오기
+        await new Promise(resolve => setTimeout(resolve, 100));
         await fetchMessages(customerId);
       } else {
         console.error('Failed to mark message as clicked:', response.status);

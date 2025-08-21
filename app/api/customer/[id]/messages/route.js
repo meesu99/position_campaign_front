@@ -9,6 +9,9 @@ export async function GET(request, { params }) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       },
     });
 
@@ -43,7 +46,12 @@ export async function GET(request, { params }) {
       );
     }
     
-    return NextResponse.json(data, { status: response.status });
+    const nextResponse = NextResponse.json(data, { status: response.status });
+    // 캐시 방지 헤더 추가
+    nextResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    nextResponse.headers.set('Pragma', 'no-cache');
+    nextResponse.headers.set('Expires', '0');
+    return nextResponse;
   } catch (error) {
     console.error('Customer messages API error:', error);
     return NextResponse.json(
