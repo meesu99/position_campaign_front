@@ -81,6 +81,8 @@ export default function Dashboard() {
       
       if (statsRes.ok) {
         const dashboardData = await statsRes.json();
+        console.log('Dashboard data received:', dashboardData);
+        console.log('Age distribution from backend:', dashboardData.ageDistribution);
         
         // 통계 설정
         setStats({
@@ -110,24 +112,33 @@ export default function Dashboard() {
           setCampaigns(dashboardData.recentCampaigns);
         }
         
-        // 나이대별 분포 설정 (원본 데이터 저장) - 남녀별로 확장
+        // 나이대별 분포 설정 (백엔드에서 받은 실제 사용자 데이터 사용)
         if (dashboardData.ageDistribution) {
           console.log('Setting original age data:', dashboardData.ageDistribution);
           
-          // 기본 남녀별 나이대 분포 생성 (절대적인 개수)
-          const expandedAgeData = [
-            { name: '20대 남성', value: 150, gender: 'male', ageGroup: '20대' },
-            { name: '20대 여성', value: 130, gender: 'female', ageGroup: '20대' },
-            { name: '30대 남성', value: 200, gender: 'male', ageGroup: '30대' },
-            { name: '30대 여성', value: 180, gender: 'female', ageGroup: '30대' },
-            { name: '40대 남성', value: 170, gender: 'male', ageGroup: '40대' },
-            { name: '40대 여성', value: 160, gender: 'female', ageGroup: '40대' },
-            { name: '50대 남성', value: 120, gender: 'male', ageGroup: '50대' },
-            { name: '50대 여성', value: 110, gender: 'female', ageGroup: '50대' },
-            { name: '60대 남성', value: 80, gender: 'male', ageGroup: '60대' },
-            { name: '60대 여성', value: 70, gender: 'female', ageGroup: '60대' }
-          ];
+          // 백엔드에서 받은 실제 사용자 캠페인 데이터를 사용
+          // 백엔드 형태: [{name: "20대", male: 5, female: 8}, ...]
+          const expandedAgeData = [];
           
+          dashboardData.ageDistribution.forEach(ageGroup => {
+            // 남성 데이터 추가
+            expandedAgeData.push({
+              name: `${ageGroup.name} 남성`,
+              value: ageGroup.male || 0,
+              gender: 'male',
+              ageGroup: ageGroup.name
+            });
+            
+            // 여성 데이터 추가
+            expandedAgeData.push({
+              name: `${ageGroup.name} 여성`,
+              value: ageGroup.female || 0,
+              gender: 'female',
+              ageGroup: ageGroup.name
+            });
+          });
+          
+          console.log('Expanded age data from backend:', expandedAgeData);
           setOriginalAgeData(expandedAgeData);
           setAgeData(expandedAgeData);
         }
@@ -179,86 +190,11 @@ export default function Dashboard() {
       clickRate: totalSent > 0 ? (totalClick / totalSent * 100).toFixed(1) : 0
     });
 
-    // 나이대별 분포 절대적 개수 조정 (캠페인 수에 따라)
+    // 나이대별 분포는 백엔드에서 받은 실제 사용자 데이터를 그대로 사용
+    // 날짜 필터링과 관계없이 사용자의 전체 완료된 캠페인 데이터를 표시
     if (originalAgeData.length > 0) {
-      const campaignCount = filteredCampaigns.length;
-      const totalCampaigns = allCampaigns.length;
-      
-      // 캠페인이 없으면 나이대별 분포도 0으로 설정
-      if (campaignCount === 0) {
-        console.log('No campaigns in selected period, setting age distribution to 0');
-        const zeroAgeData = originalAgeData.map(ageGroup => ({
-          ...ageGroup,
-          value: 0
-        }));
-        setAgeData(zeroAgeData);
-        return;
-      }
-      
-      // 캠페인 수에 따른 절대적 개수 계산
-      // 캠페인이 많을수록 더 많은 사람이 참여한다고 가정
-      const baseMultiplier = campaignCount * 50; // 캠페인 1개당 50명 참여
-      
-      console.log('Age distribution adjustment:', {
-        campaignCount,
-        totalCampaigns,
-        totalSent,
-        baseMultiplier,
-        startDate,
-        endDate
-      });
-      
-      const adjustedAgeData = originalAgeData.map(ageGroup => {
-        // 원본 비율을 유지하면서 절대적 개수로 변환
-        const ratio = ageGroup.value / 1000; // 원본 데이터의 비율
-        const newValue = Math.round(baseMultiplier * ratio);
-        
-        return {
-          ...ageGroup,
-          value: newValue
-        };
-      });
-      
-      console.log('Original age data:', originalAgeData);
-      console.log('Adjusted age data:', adjustedAgeData);
-      
-      setAgeData(adjustedAgeData);
-    } else {
-      // 백엔드 데이터가 없는 경우 기본 남녀별 나이대 분포
-      const campaignCount = filteredCampaigns.length;
-      
-      if (campaignCount === 0) {
-        const zeroDefaultData = [
-          { name: '20대 남성', value: 0, gender: 'male', ageGroup: '20대' },
-          { name: '20대 여성', value: 0, gender: 'female', ageGroup: '20대' },
-          { name: '30대 남성', value: 0, gender: 'male', ageGroup: '30대' },
-          { name: '30대 여성', value: 0, gender: 'female', ageGroup: '30대' },
-          { name: '40대 남성', value: 0, gender: 'male', ageGroup: '40대' },
-          { name: '40대 여성', value: 0, gender: 'female', ageGroup: '40대' },
-          { name: '50대 남성', value: 0, gender: 'male', ageGroup: '50대' },
-          { name: '50대 여성', value: 0, gender: 'female', ageGroup: '50대' },
-          { name: '60대 남성', value: 0, gender: 'male', ageGroup: '60대' },
-          { name: '60대 여성', value: 0, gender: 'female', ageGroup: '60대' }
-        ];
-        setAgeData(zeroDefaultData);
-        return;
-      }
-      
-      const baseMultiplier = campaignCount * 50;
-      const defaultAgeData = [
-        { name: '20대 남성', value: Math.round(baseMultiplier * 0.15), gender: 'male', ageGroup: '20대' },
-        { name: '20대 여성', value: Math.round(baseMultiplier * 0.13), gender: 'female', ageGroup: '20대' },
-        { name: '30대 남성', value: Math.round(baseMultiplier * 0.20), gender: 'male', ageGroup: '30대' },
-        { name: '30대 여성', value: Math.round(baseMultiplier * 0.18), gender: 'female', ageGroup: '30대' },
-        { name: '40대 남성', value: Math.round(baseMultiplier * 0.17), gender: 'male', ageGroup: '40대' },
-        { name: '40대 여성', value: Math.round(baseMultiplier * 0.16), gender: 'female', ageGroup: '40대' },
-        { name: '50대 남성', value: Math.round(baseMultiplier * 0.12), gender: 'male', ageGroup: '50대' },
-        { name: '50대 여성', value: Math.round(baseMultiplier * 0.11), gender: 'female', ageGroup: '50대' },
-        { name: '60대 남성', value: Math.round(baseMultiplier * 0.08), gender: 'male', ageGroup: '60대' },
-        { name: '60대 여성', value: Math.round(baseMultiplier * 0.07), gender: 'female', ageGroup: '60대' }
-      ];
-      
-      setAgeData(defaultAgeData);
+      console.log('Using real age data from backend:', originalAgeData);
+      setAgeData(originalAgeData);
     }
   };
 
