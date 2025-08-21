@@ -1,6 +1,6 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/login/page": "app/login/page.js",
-  "/api/customer/[id]/messages/route": "app/api/customer/[id]/messages/route.js",
-  "/customer-messages/page": "app/customer-messages/page.js"
+  "/dashboard/page": "app/dashboard/page.js",
+  "/campaigns/new/page": "app/campaigns/new/page.js",
+  "/api/campaigns/dashboard-stats/route": "app/api/campaigns/dashboard-stats/route.js",
+  "/api/campaigns/customers/route": "app/api/campaigns/customers/route.js"
 }
