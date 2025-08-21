@@ -260,7 +260,7 @@ export default function Dashboard() {
   }
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute adminRestricted={true}>
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         

@@ -20,21 +20,27 @@ export default function Navbar() {
           
           <div className="flex items-center space-x-4">
             <span className="text-gray-700">{user.companyName}</span>
-            <span className="text-sm text-gray-500">포인트: {user.points?.toLocaleString()}P</span>
+            {user.role !== 'ADMIN' && (
+              <span className="text-sm text-gray-500">포인트: {user.points?.toLocaleString()}P</span>
+            )}
             
             <div className="flex space-x-2">
-              <Link href="/dashboard" className="text-gray-700 hover:text-kt-red px-3 py-2 rounded-md">
-                대시보드
-              </Link>
-              <Link href="/campaigns/new" className="text-gray-700 hover:text-kt-red px-3 py-2 rounded-md">
-                캠페인 생성
-              </Link>
-              <Link href="/wallet" className="text-gray-700 hover:text-kt-red px-3 py-2 rounded-md">
-                지갑
-              </Link>
-              <Link href="/alerts" className="text-gray-700 hover:text-kt-red px-3 py-2 rounded-md">
-                알림
-              </Link>
+              {user.role !== 'ADMIN' && (
+                <>
+                  <Link href="/dashboard" className="text-gray-700 hover:text-kt-red px-3 py-2 rounded-md">
+                    대시보드
+                  </Link>
+                  <Link href="/campaigns/new" className="text-gray-700 hover:text-kt-red px-3 py-2 rounded-md">
+                    캠페인 생성
+                  </Link>
+                  <Link href="/wallet" className="text-gray-700 hover:text-kt-red px-3 py-2 rounded-md">
+                    지갑
+                  </Link>
+                  <Link href="/alerts" className="text-gray-700 hover:text-kt-red px-3 py-2 rounded-md">
+                    알림
+                  </Link>
+                </>
+              )}
               
               {user.role === 'ADMIN' && (
                 <Link href="/admin/customers" className="text-gray-700 hover:text-kt-red px-3 py-2 rounded-md">

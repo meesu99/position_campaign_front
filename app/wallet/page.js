@@ -119,7 +119,7 @@ export default function Wallet() {
   }
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute adminRestricted={true}>
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         
