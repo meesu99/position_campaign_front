@@ -1,9 +1,16 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/customer/messages/[id]/read/route": "app/api/customer/messages/[id]/read/route.js",
-  "/admin/customers/page": "app/admin/customers/page.js",
-  "/api/admin/customers/route": "app/api/admin/customers/route.js",
   "/login/page": "app/login/page.js",
   "/customer-messages/page": "app/customer-messages/page.js",
-  "/api/customer/[id]/messages/route": "app/api/customer/[id]/messages/route.js"
+  "/api/customer/[id]/messages/route": "app/api/customer/[id]/messages/route.js",
+  "/api/customer/messages/[id]/read/route": "app/api/customer/messages/[id]/read/route.js",
+  "/api/customer/messages/[id]/click/route": "app/api/customer/messages/[id]/click/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/api/campaigns/dashboard-stats/route": "app/api/campaigns/dashboard-stats/route.js",
+  "/campaigns/new/page": "app/campaigns/new/page.js",
+  "/api/campaigns/customers/route": "app/api/campaigns/customers/route.js",
+  "/wallet/page": "app/wallet/page.js",
+  "/alerts/page": "app/alerts/page.js",
+  "/api/campaigns/route": "app/api/campaigns/route.js",
+  "/admin/customers/page": "app/admin/customers/page.js",
+  "/api/admin/customers/route": "app/api/admin/customers/route.js"
 }
