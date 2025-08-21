@@ -346,7 +346,7 @@ export default function Dashboard() {
             {/* 기간별 라인 차트 */}
             <div className="card">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                선택 기간 캠페인 성과 ({startDate} ~ {endDate})
+                캠페인 성과 그래프
               </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData}>
@@ -363,26 +363,36 @@ export default function Dashboard() {
             
             {/* 나이대별 분포 */}
             <div className="card">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">나이대별 성별 분포</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">나이대별 캠페인 통계</h3>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={ageData}>
+                <BarChart data={(() => {
+                  // 나이대별로 그룹화된 데이터 생성
+                  const groupedData = {};
+                  ageData.forEach(item => {
+                    if (!groupedData[item.ageGroup]) {
+                      groupedData[item.ageGroup] = {
+                        name: item.ageGroup,
+                        male: 0,
+                        female: 0
+                      };
+                    }
+                    if (item.gender === 'male') {
+                      groupedData[item.ageGroup].male = item.value;
+                    } else {
+                      groupedData[item.ageGroup].female = item.value;
+                    }
+                  });
+                  return Object.values(groupedData);
+                })()}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
-                    dataKey="name" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
+                    dataKey="name"
+                    height={60}
                   />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="value">
-                    {ageData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.gender === 'male' ? '#2196f3' : '#e91e63'} 
-                      />
-                    ))}
-                  </Bar>
+                  <Bar dataKey="male" fill="#2196f3" name="남성" />
+                  <Bar dataKey="female" fill="#e91e63" name="여성" />
                 </BarChart>
               </ResponsiveContainer>
               <div className="mt-2 flex justify-center space-x-4">
@@ -400,7 +410,7 @@ export default function Dashboard() {
           
           {/* 선택 기간 캠페인 목록 */}
           <div className="card">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">선택 기간 캠페인 목록</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">캠페인 목록</h3>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
