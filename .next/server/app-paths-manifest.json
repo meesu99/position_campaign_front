@@ -1,6 +1,14 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
   "/campaigns/[id]/stats/page": "app/campaigns/[id]/stats/page.js",
-  "/api/campaigns/dashboard-stats/route": "app/api/campaigns/dashboard-stats/route.js"
+  "/wallet/page": "app/wallet/page.js",
+  "/login/page": "app/login/page.js",
+  "/api/customer/[id]/messages/route": "app/api/customer/[id]/messages/route.js",
+  "/api/customer/messages/[id]/read/route": "app/api/customer/messages/[id]/read/route.js",
+  "/signup/page": "app/signup/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/api/campaigns/dashboard-stats/route": "app/api/campaigns/dashboard-stats/route.js",
+  "/alerts/page": "app/alerts/page.js",
+  "/api/campaigns/route": "app/api/campaigns/route.js",
+  "/campaigns/new/page": "app/campaigns/new/page.js",
+  "/api/campaigns/customers/route": "app/api/campaigns/customers/route.js"
 }
