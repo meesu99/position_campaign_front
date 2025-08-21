@@ -10,6 +10,7 @@ export default function CustomerMessages() {
   const [error, setError] = useState('');
   const [customerInfo, setCustomerInfo] = useState(null);
   const [lastRefresh, setLastRefresh] = useState(null);
+  const [actionLoading, setActionLoading] = useState(null); // 어떤 메시지가 로딩 중인지 추적
 
   const fetchMessages = async (customerIdToFetch) => {
     setLoading(true);
@@ -59,45 +60,55 @@ export default function CustomerMessages() {
   };
 
   const handleMessageClick = async (messageId) => {
+    if (actionLoading === messageId) return; // 이미 로딩 중이면 중복 실행 방지
+    
     // 읽음 처리
+    setActionLoading(messageId);
     try {
-      await fetch(`/api/customer/messages/${messageId}/read`, {
+      const response = await fetch(`/api/customer/messages/${messageId}/read`, {
         method: 'POST',
         credentials: 'include'
       });
       
-      // 메시지 목록 새로고침
-      setMessages(messages.map(msg => 
-        msg.id === messageId 
-          ? { ...msg, readAt: new Date().toISOString() }
-          : msg
-      ));
+      if (response.ok) {
+        // 서버에서 최신 데이터 다시 가져오기
+        await fetchMessages(customerId);
+      } else {
+        console.error('Failed to mark message as read:', response.status);
+      }
     } catch (error) {
       console.error('Error marking message as read:', error);
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const handleLinkClick = async (messageId, link) => {
+    if (actionLoading === messageId) return; // 이미 로딩 중이면 중복 실행 방지
+    
     // 클릭 처리
+    setActionLoading(messageId);
     try {
-      await fetch(`/api/customer/messages/${messageId}/click`, {
+      const response = await fetch(`/api/customer/messages/${messageId}/click`, {
         method: 'POST',
         credentials: 'include'
       });
       
-      // 메시지 목록 새로고침
-      setMessages(messages.map(msg => 
-        msg.id === messageId 
-          ? { ...msg, clickAt: new Date().toISOString() }
-          : msg
-      ));
+      if (response.ok) {
+        // 서버에서 최신 데이터 다시 가져오기
+        await fetchMessages(customerId);
+      } else {
+        console.error('Failed to mark message as clicked:', response.status);
+      }
       
-      // 링크 열기
+      // 링크 열기 (API 성공 여부와 관계없이)
       window.open(link, '_blank');
     } catch (error) {
       console.error('Error marking message as clicked:', error);
       // 에러가 있어도 링크는 열어줌
       window.open(link, '_blank');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -205,7 +216,7 @@ export default function CustomerMessages() {
               
               {/* 메시지 내용 */}
               <div 
-                className="p-4 cursor-pointer hover:bg-gray-50"
+                className={`p-4 cursor-pointer hover:bg-gray-50 ${actionLoading === message.id ? 'opacity-50' : ''}`}
                 onClick={() => handleMessageClick(message.id)}
               >
                 <h4 className="font-bold text-gray-900 mb-2">{message.title}</h4>
@@ -219,9 +230,10 @@ export default function CustomerMessages() {
                       e.stopPropagation();
                       handleLinkClick(message.id, message.link);
                     }}
-                    className="inline-flex items-center px-3 py-1 bg-blue-500 text-white text-sm rounded-full hover:bg-blue-600"
+                    disabled={actionLoading === message.id}
+                    className={`inline-flex items-center px-3 py-1 bg-blue-500 text-white text-sm rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed ${actionLoading === message.id ? 'animate-pulse' : ''}`}
                   >
-                    🔗 링크 확인하기
+                    {actionLoading === message.id ? '처리중...' : '🔗 링크 확인하기'}
                   </button>
                 )}
                 
