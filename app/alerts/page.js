@@ -9,44 +9,80 @@ export default function Alerts() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = 'KT 위치 문자 서비스 - 알림';
     fetchMessages();
   }, []);
 
   const fetchMessages = async () => {
     try {
-      // 실제 API가 없으므로 샘플 데이터 사용
-      const sampleMessages = [
-        {
-          id: 1,
-          text: '갤럭시 폴드7 최저가 판매 캠페인이 성공적으로 발송되었습니다.',
-          link: null,
-          fromAdmin: true,
-          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2시간 전
-          campaign: {
-            title: '갤럭시 폴드7 최저가 판매'
+      // 실제 캠페인 데이터 기반 알림 생성
+      const campaignsRes = await fetch('/api/campaigns', {
+        credentials: 'include'
+      });
+
+      if (campaignsRes.ok) {
+        const campaigns = await campaignsRes.json();
+        
+        // 완료된 캠페인들을 기반으로 알림 생성
+        const campaignNotifications = campaigns
+          .filter(campaign => campaign.status === 'COMPLETED')
+          .slice(0, 10) // 최근 10개만
+          .map((campaign, index) => ({
+            id: `campaign-${campaign.id}`,
+            text: `"${campaign.title}" 캠페인이 성공적으로 발송되었습니다. ${campaign.recipientsCount}명에게 전달되었습니다.`,
+            link: `/campaigns/${campaign.id}/stats`,
+            fromAdmin: false,
+            createdAt: campaign.createdAt,
+            campaign: {
+              id: campaign.id,
+              title: campaign.title,
+              status: campaign.status,
+              recipientsCount: campaign.recipientsCount
+            }
+          }));
+
+        // 시스템 알림 추가
+        const systemNotifications = [
+          {
+            id: 'system-1',
+            text: '🎉 KT 위치 문자 서비스에 오신 것을 환영합니다! 효과적인 위치 기반 마케팅을 시작해보세요.',
+            link: '/campaigns/new',
+            fromAdmin: true,
+            createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1일 전
+            campaign: null
+          },
+          {
+            id: 'system-2', 
+            text: '💡 팁: 대시보드에서 캠페인 성과를 실시간으로 확인하고 날짜별 필터링도 가능합니다.',
+            link: '/dashboard',
+            fromAdmin: true,
+            createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3일 전
+            campaign: null
           }
-        },
-        {
-          id: 2,
-          text: '🎉 KT 쇼핑몰에서 새로운 이벤트가 시작되었습니다! 갤럭시 폴드7 최저가로 만나보세요.',
-          link: 'https://shop.kt.com/',
-          fromAdmin: true,
-          createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6시간 전
-          campaign: null
-        },
-        {
-          id: 3,
-          text: '📱 새로운 KT 5G 요금제가 출시되었습니다. 무제한 데이터로 더욱 자유롭게!',
-          link: 'https://shop.kt.com/5g',
-          fromAdmin: true,
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1일 전
-          campaign: null
-        }
-      ];
-      
-      setMessages(sampleMessages);
+        ];
+
+        // 모든 알림을 시간순으로 정렬
+        const allNotifications = [...campaignNotifications, ...systemNotifications]
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        setMessages(allNotifications);
+      } else {
+        console.error('Failed to fetch campaigns for notifications');
+        // 오류 시 기본 메시지만 표시
+        setMessages([
+          {
+            id: 'error-1',
+            text: '알림을 불러오는 중 오류가 발생했습니다. 새로고침해 주세요.',
+            link: null,
+            fromAdmin: true,
+            createdAt: new Date().toISOString(),
+            campaign: null
+          }
+        ]);
+      }
     } catch (error) {
       console.error('Error fetching messages:', error);
+      setMessages([]);
     } finally {
       setLoading(false);
     }
@@ -71,7 +107,13 @@ export default function Alerts() {
 
   const handleLinkClick = (link) => {
     if (link) {
-      window.open(link, '_blank');
+      if (link.startsWith('http')) {
+        // 외부 링크는 새 탭에서 열기
+        window.open(link, '_blank');
+      } else {
+        // 내부 링크는 같은 탭에서 이동
+        window.location.href = link;
+      }
     }
   };
 
