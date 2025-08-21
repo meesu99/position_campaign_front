@@ -17,10 +17,28 @@ export default function Dashboard() {
   const [chartData, setChartData] = useState([]);
   const [ageData, setAgeData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [allCampaigns, setAllCampaigns] = useState([]);
+  const [originalChartData, setOriginalChartData] = useState([]);
 
   useEffect(() => {
+    // 기본값: 최근 7일
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
+    
+    setStartDate(sevenDaysAgo.toISOString().split('T')[0]);
+    setEndDate(today.toISOString().split('T')[0]);
+    
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (startDate && endDate && allCampaigns.length > 0) {
+      applyDateFilter();
+    }
+  }, [startDate, endDate, allCampaigns]);
 
   const fetchData = async () => {
     try {
@@ -41,19 +59,22 @@ export default function Dashboard() {
           clickRate: dashboardData.clickRate ? dashboardData.clickRate.toFixed(1) : 0
         });
         
-        // 차트 데이터 설정
+        // 차트 데이터 설정 (원본 데이터 저장)
         if (dashboardData.chartData) {
           const chartData = dashboardData.chartData.labels.map((label, index) => ({
             date: new Date(label).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
+            originalDate: label,
             sent: dashboardData.chartData.sent[index] || 0,
             read: dashboardData.chartData.read[index] || 0,
             click: dashboardData.chartData.click[index] || 0
           }));
+          setOriginalChartData(chartData);
           setChartData(chartData);
         }
         
-        // 최근 캠페인 설정
+        // 최근 캠페인 설정 (원본 데이터 저장)
         if (dashboardData.recentCampaigns) {
+          setAllCampaigns(dashboardData.recentCampaigns);
           setCampaigns(dashboardData.recentCampaigns);
         }
         
@@ -69,6 +90,45 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyDateFilter = () => {
+    const startDateTime = new Date(startDate);
+    const endDateTime = new Date(endDate);
+    endDateTime.setHours(23, 59, 59); // 종료일은 당일 마지막 시간까지
+
+    // 캠페인 필터링
+    const filteredCampaigns = allCampaigns.filter(campaign => {
+      const campaignDate = new Date(campaign.createdAt);
+      return campaignDate >= startDateTime && campaignDate <= endDateTime;
+    });
+    setCampaigns(filteredCampaigns);
+
+    // 차트 데이터 필터링
+    const filteredChartData = originalChartData.filter(data => {
+      const dataDate = new Date(data.originalDate);
+      return dataDate >= startDateTime && dataDate <= endDateTime;
+    });
+    setChartData(filteredChartData);
+
+    // 통계 재계산 (필터링된 캠페인 기준)
+    let totalSent = 0;
+    let totalRead = 0;
+    let totalClick = 0;
+    
+    filteredChartData.forEach(data => {
+      totalSent += data.sent;
+      totalRead += data.read;
+      totalClick += data.click;
+    });
+
+    setStats({
+      totalSent,
+      totalRead,
+      totalClick,
+      readRate: totalSent > 0 ? (totalRead / totalSent * 100).toFixed(1) : 0,
+      clickRate: totalSent > 0 ? (totalClick / totalSent * 100).toFixed(1) : 0
+    });
   };
 
   const distributionData = [
@@ -94,7 +154,57 @@ export default function Dashboard() {
         <Navbar />
         
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">대시보드</h1>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">대시보드</h1>
+            
+            {/* 날짜 선택기 */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <label htmlFor="startDate" className="text-sm font-medium text-gray-700">시작일:</label>
+                <input
+                  type="date"
+                  id="startDate"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-kt-red"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <label htmlFor="endDate" className="text-sm font-medium text-gray-700">종료일:</label>
+                <input
+                  type="date"
+                  id="endDate"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-kt-red"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  const today = new Date();
+                  const sevenDaysAgo = new Date(today);
+                  sevenDaysAgo.setDate(today.getDate() - 7);
+                  setStartDate(sevenDaysAgo.toISOString().split('T')[0]);
+                  setEndDate(today.toISOString().split('T')[0]);
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                최근 7일
+              </button>
+              <button
+                onClick={() => {
+                  const today = new Date();
+                  const thirtyDaysAgo = new Date(today);
+                  thirtyDaysAgo.setDate(today.getDate() - 30);
+                  setStartDate(thirtyDaysAgo.toISOString().split('T')[0]);
+                  setEndDate(today.toISOString().split('T')[0]);
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                최근 30일
+              </button>
+            </div>
+          </div>
           
           {/* KPI 카드 */}
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
@@ -122,9 +232,11 @@ export default function Dashboard() {
           
           {/* 차트 섹션 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* 24시간 라인 차트 */}
+            {/* 기간별 라인 차트 */}
             <div className="card">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">최근 7일 캠페인 성과</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                선택 기간 캠페인 성과 ({startDate} ~ {endDate})
+              </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -153,9 +265,9 @@ export default function Dashboard() {
             </div>
           </div>
           
-          {/* 최근 캠페인 목록 */}
+          {/* 선택 기간 캠페인 목록 */}
           <div className="card">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">최근 캠페인</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">선택 기간 캠페인 목록</h3>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
