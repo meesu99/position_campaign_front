@@ -1,5 +1,23 @@
 'use client';
 
+/**
+ * KT 위치 문자 서비스 - 인증 컨텍스트
+ * 
+ * 이 컨텍스트는 애플리케이션 전역에서 사용자 인증 상태를 관리합니다.
+ * 
+ * 주요 기능:
+ * - 사용자 로그인 상태 관리
+ * - JWT 토큰 기반 인증 처리
+ * - 자동 로그인 (토큰 유효성 검사)
+ * - 로그아웃 처리
+ * 
+ * 상태 관리:
+ * - user: 현재 로그인된 사용자 정보 (id, email, name, role, points)
+ * - loading: 초기 인증 상태 로딩 여부
+ * 
+ * @author KT 위치 문자 서비스 팀
+ */
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 

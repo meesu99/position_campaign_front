@@ -1,5 +1,24 @@
 'use client';
 
+/**
+ * KT 위치 문자 서비스 - 캠페인 상세 통계 페이지
+ * 
+ * 이 컴포넌트는 특정 캠페인의 상세한 통계 정보를 표시합니다.
+ * 
+ * 주요 기능:
+ * - 캠페인 기본 정보 표시 (제목, 상태, 수신자 수, 비용)
+ * - 메시지 내용 및 링크 표시
+ * - KPI 카드 (발송, 읽음, 클릭 수 및 비율)
+ * - 시간별 성과 차트 (실제 데이터 기반)
+ * 
+ * 특별 기능:
+ * - 읽음률, 클릭률을 정수로 반올림 표시
+ * - 실제 데이터베이스에서 시간별 통계 조회
+ * - 24시간 시간대별 성과 시각화
+ * 
+ * @author KT 위치 문자 서비스 팀
+ */
+
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import ProtectedRoute from '../../../components/ProtectedRoute';

@@ -1,5 +1,30 @@
 'use client';
 
+/**
+ * KT 위치 문자 서비스 - 회원가입 페이지
+ * 
+ * 이 컴포넌트는 새로운 사용자의 회원가입 기능을 제공합니다.
+ * 
+ * 주요 기능:
+ * - 이메일, 비밀번호, 사업자번호, 회사명 입력
+ * - 이메일 중복 검증 (백엔드에서 처리)
+ * - 회원가입 성공 시 자동 로그인 및 리다이렉트
+ * - 로그인 페이지로의 링크 제공
+ * 
+ * 입력 필드:
+ * - 이메일: 로그인 ID로 사용
+ * - 비밀번호: BCrypt 암호화 처리
+ * - 사업자번호: 사업자 인증용
+ * - 회사명: 표시명
+ * 
+ * UI 특징:
+ * - Tailwind CSS를 이용한 반응형 디자인
+ * - 로딩 상태 및 에러 메시지 표시
+ * - 브랜드 일관성 유지 ("KT 위치 문자 서비스")
+ * 
+ * @author KT 위치 문자 서비스 팀
+ */
+
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';

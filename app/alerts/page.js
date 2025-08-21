@@ -1,5 +1,31 @@
 'use client';
 
+/**
+ * KT 위치 문자 서비스 - 알림 페이지
+ * 
+ * 이 컴포넌트는 완료된 캠페인에 대한 알림을 표시합니다.
+ * 
+ * 주요 기능:
+ * - 완료된 캠페인 기반 실시간 알림 생성
+ * - 캠페인 상세 페이지로의 링크 제공
+ * - 알림 목록 시간순 정렬 (최신순)
+ * 
+ * 알림 생성 규칙:
+ * - COMPLETED 상태의 캠페인만 알림 생성
+ * - 캠페인 제목, 생성 시간, 상세 링크 포함
+ * 
+ * 접근 제한:
+ * - 관리자(ADMIN)는 접근 제한 (adminRestricted=true)
+ * - 일반 사용자(USER)만 접근 가능
+ * 
+ * UI 특징:
+ * - 실제 데이터 기반 동적 알림 목록
+ * - 캠페인별 "상세보기" 링크
+ * - 빈 상태 메시지 (알림이 없는 경우)
+ * 
+ * @author KT 위치 문자 서비스 팀
+ */
+
 import { useState, useEffect } from 'react';
 import ProtectedRoute from '../components/ProtectedRoute';
 import Navbar from '../components/Navbar';

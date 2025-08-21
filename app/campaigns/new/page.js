@@ -1,5 +1,34 @@
 'use client';
 
+/**
+ * KT 위치 문자 서비스 - 새 캠페인 생성 페이지
+ * 
+ * 이 컴포넌트는 새로운 위치 기반 문자 캠페인을 생성하는 기능을 제공합니다.
+ * 
+ * 주요 기능:
+ * - 캠페인 기본 정보 입력 (제목, 메시지, 링크)
+ * - 지역 기반 타겟 필터링 (시도, 시군구)
+ * - 나이 및 성별 필터링
+ * - 실시간 미리보기 (대상 고객 수, 예상 비용)
+ * - 카카오 맵 연동 지역 선택
+ * 
+ * 필터링 옵션:
+ * - 지역: 시도/시군구 선택
+ * - 성별: 남성/여성/전체
+ * - 나이: 최소/최대 나이 범위
+ * 
+ * 접근 제한:
+ * - 관리자(ADMIN)는 접근 제한 (adminRestricted=true)
+ * - 일반 사용자(USER)만 접근 가능
+ * 
+ * 특별 기능:
+ * - 실시간 비용 계산 (고객 수 × 단가)
+ * - 포인트 잔액 확인 및 부족 시 경고
+ * - 지도 컴포넌트를 통한 시각적 지역 선택
+ * 
+ * @author KT 위치 문자 서비스 팀
+ */
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '../../components/ProtectedRoute';

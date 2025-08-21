@@ -1,5 +1,28 @@
 'use client';
 
+/**
+ * KT 위치 문자 서비스 - 로그인 페이지
+ * 
+ * 이 컴포넌트는 사용자 로그인 기능을 제공합니다.
+ * 
+ * 주요 기능:
+ * - 이메일/비밀번호 기반 로그인
+ * - JWT 토큰 자동 관리 (쿠키)
+ * - 로그인 상태 확인 후 자동 리다이렉트
+ * - 회원가입 페이지로의 링크 제공
+ * 
+ * 자동 리다이렉트 규칙:
+ * - 이미 로그인된 사용자 (ADMIN): /admin/customers
+ * - 이미 로그인된 사용자 (USER): /dashboard
+ * 
+ * UI 특징:
+ * - Tailwind CSS를 이용한 반응형 디자인
+ * - 로딩 상태 및 에러 메시지 표시
+ * - 브랜드 일관성 유지 ("KT 위치 문자 서비스")
+ * 
+ * @author KT 위치 문자 서비스 팀
+ */
+
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Link from 'next/link';

@@ -1,5 +1,25 @@
 'use client';
 
+/**
+ * KT 위치 문자 서비스 - 대시보드 페이지
+ * 
+ * 이 컴포넌트는 캠페인 통계를 시각화하여 보여주는 메인 대시보드입니다.
+ * 
+ * 주요 기능:
+ * - 실시간 캠페인 통계 (발송, 읽음, 클릭 수 및 비율)
+ * - 날짜 범위 필터링 (클라이언트 사이드)
+ * - 시간별 성과 차트 (LineChart)
+ * - 나이대별 성별 분포 차트 (BarChart - 10개 막대)
+ * - 최근 캠페인 목록 및 상세보기 링크
+ * 
+ * 특별 기능:
+ * - 클라이언트 사이드 필터링으로 성능 최적화
+ * - 동적 차트 업데이트 (날짜 선택 시 실시간 반영)
+ * - 캠페인이 없는 경우 나이대별 분포를 0으로 표시
+ * 
+ * @author KT 위치 문자 서비스 팀
+ */
+
 import { useState, useEffect } from 'react';
 import ProtectedRoute from '../components/ProtectedRoute';
 import Navbar from '../components/Navbar';
