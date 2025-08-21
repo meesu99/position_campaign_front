@@ -9,21 +9,14 @@ export default function CustomerMessages() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [customerInfo, setCustomerInfo] = useState(null);
+  const [lastRefresh, setLastRefresh] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!customerId.trim()) {
-      setError('고객 ID를 입력해주세요.');
-      return;
-    }
-
+  const fetchMessages = async (customerIdToFetch) => {
     setLoading(true);
     setError('');
-    setMessages([]);
-    setCustomerInfo(null);
 
     try {
-      const response = await fetch(`/api/customer/${customerId}/messages`, {
+      const response = await fetch(`/api/customer/${customerIdToFetch}/messages`, {
         credentials: 'include'
       });
 
@@ -31,6 +24,7 @@ export default function CustomerMessages() {
         const data = await response.json();
         setMessages(data.messages || []);
         setCustomerInfo(data.customer);
+        setLastRefresh(new Date());
       } else if (response.status === 404) {
         setError('해당 ID의 고객을 찾을 수 없습니다.');
       } else {
@@ -42,6 +36,26 @@ export default function CustomerMessages() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!customerId.trim()) {
+      setError('고객 ID를 입력해주세요.');
+      return;
+    }
+
+    setMessages([]);
+    setCustomerInfo(null);
+    await fetchMessages(customerId);
+  };
+
+  const handleRefresh = async () => {
+    if (!customerId.trim()) {
+      setError('먼저 고객 ID를 입력하고 확인해주세요.');
+      return;
+    }
+    await fetchMessages(customerId);
   };
 
   const handleMessageClick = async (messageId) => {
@@ -116,17 +130,45 @@ export default function CustomerMessages() {
             >
               {loading ? '확인중...' : '확인'}
             </button>
+            {customerInfo && (
+              <button
+                type="button"
+                onClick={handleRefresh}
+                disabled={loading}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 disabled:opacity-50"
+              >
+                {loading ? '새로고침중...' : '🔄 새로고침'}
+              </button>
+            )}
           </div>
           
           {error && (
             <p className="mt-2 text-sm text-red-600">{error}</p>
           )}
+          
+          {lastRefresh && (
+            <p className="mt-2 text-xs text-gray-500">
+              마지막 업데이트: {lastRefresh.toLocaleString('ko-KR')}
+            </p>
+          )}
         </form>
 
         {customerInfo && (
           <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-            <h3 className="font-medium text-gray-900">👤 {customerInfo.maskedName}</h3>
-            <p className="text-sm text-gray-600">{customerInfo.maskedAddress}</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-medium text-gray-900">👤 {customerInfo.maskedName}</h3>
+                <p className="text-sm text-gray-600">{customerInfo.maskedAddress}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900">
+                  📨 메시지 {messages.length}개
+                </p>
+                <p className="text-xs text-gray-500">
+                  미읽음 {messages.filter(msg => !msg.readAt).length}개
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -179,7 +221,7 @@ export default function CustomerMessages() {
                     }}
                     className="inline-flex items-center px-3 py-1 bg-blue-500 text-white text-sm rounded-full hover:bg-blue-600"
                   >
-                    🔗 자세히 보기
+                    🔗 링크 확인하기
                   </button>
                 )}
                 

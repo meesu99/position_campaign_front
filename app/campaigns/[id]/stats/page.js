@@ -18,6 +18,7 @@ export default function CampaignStats() {
     readRate: 0,
     clickRate: 0
   });
+  const [hourlyData, setHourlyData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,6 +42,14 @@ export default function CampaignStats() {
           readRate: data.readRate,
           clickRate: data.clickRate
         });
+        
+        // 실제 시간별 데이터 설정
+        if (data.hourlyData && data.hourlyData.hourlyStats) {
+          setHourlyData(data.hourlyData.hourlyStats);
+        } else {
+          // 백엔드에서 데이터가 없는 경우 빈 배열
+          setHourlyData([]);
+        }
       } else {
         console.error('Failed to fetch campaign stats');
       }
@@ -82,13 +91,8 @@ export default function CampaignStats() {
     );
   }
 
-  // 시간별 가상 데이터 (실제로는 백엔드에서 받아올 수 있음)
-  const hourlyData = Array.from({ length: 24 }, (_, i) => ({
-    time: `${i}:00`,
-    sent: Math.floor(stats.sent * Math.random() * 0.1),
-    read: Math.floor(stats.read * Math.random() * 0.08),
-    click: Math.floor(stats.click * Math.random() * 0.05)
-  }));
+  // 차트 데이터가 없는 경우 메시지 표시용
+  const hasHourlyData = hourlyData && hourlyData.length > 0;
 
   return (
     <ProtectedRoute>
@@ -174,28 +178,41 @@ export default function CampaignStats() {
             </div>
             <div className="card">
               <h3 className="text-sm font-medium text-gray-500">읽음률</h3>
-              <p className="text-2xl font-bold text-green-600">{stats.readRate}%</p>
+              <p className="text-2xl font-bold text-green-600">{Math.round(stats.readRate)}%</p>
             </div>
             <div className="card">
               <h3 className="text-sm font-medium text-gray-500">클릭률</h3>
-              <p className="text-2xl font-bold text-blue-600">{stats.clickRate}%</p>
+              <p className="text-2xl font-bold text-blue-600">{Math.round(stats.clickRate)}%</p>
             </div>
           </div>
 
           {/* 시간별 성과 차트 */}
           <div className="card">
             <h3 className="text-lg font-medium text-gray-900 mb-4">시간별 성과</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={hourlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="sent" stroke="#e91e63" name="발송" />
-                <Line type="monotone" dataKey="read" stroke="#4caf50" name="읽음" />
-                <Line type="monotone" dataKey="click" stroke="#2196f3" name="클릭" />
-              </LineChart>
-            </ResponsiveContainer>
+            
+            {hasHourlyData ? (
+              <>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={hourlyData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="time" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="sent" stroke="#e91e63" name="발송" />
+                    <Line type="monotone" dataKey="read" stroke="#4caf50" name="읽음" />
+                    <Line type="monotone" dataKey="click" stroke="#2196f3" name="클릭" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-gray-400 text-4xl mb-4">📊</div>
+                <p className="text-gray-500 mb-2">시간별 데이터가 없습니다.</p>
+                <p className="text-sm text-gray-400">
+                  캠페인이 발송되고 고객들이 반응하면 시간별 성과가 표시됩니다.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
