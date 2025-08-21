@@ -14,7 +14,7 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/dashboard" className="text-xl font-bold text-kt-red">
-              KT 캠페인
+              KT 위치 문자 서비스
             </Link>
           </div>
           

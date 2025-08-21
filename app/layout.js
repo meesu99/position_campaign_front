@@ -7,6 +7,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko">
       <head>
+        <title>KT 위치 문자 서비스</title>
+        <meta name="description" content="KT 위치 문자 서비스" />
         <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
         <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=78c6ec95f4fada914962a2062dca6cfe&libraries=services"></script>
       </head>
