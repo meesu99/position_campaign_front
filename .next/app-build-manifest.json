@@ -16,30 +16,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/campaigns/[id]/stats/page.js"
     ],
-    "/wallet/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/wallet/page.js"
-    ],
-    "/alerts/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/alerts/page.js"
-    ],
-    "/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
-    ],
-    "/customer-messages/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/customer-messages/page.js"
-    ],
-    "/campaigns/new/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/campaigns/new/page.js"
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }

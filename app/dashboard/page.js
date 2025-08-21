@@ -242,6 +242,8 @@ export default function Dashboard() {
     }
   };
 
+
+
   const distributionData = [
     { name: '남성', value: 45 },
     { name: '여성', value: 55 },
@@ -410,7 +412,9 @@ export default function Dashboard() {
           
           {/* 선택 기간 캠페인 목록 */}
           <div className="card">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">캠페인 목록</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">캠페인 목록</h3>
+            </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
